@@ -1,6 +1,7 @@
 package com.example.codesharing.platform;
 
 import java.util.Date;
+import java.util.Map;
 
 public class CodeFragment {
     Date date;
@@ -23,5 +24,10 @@ public class CodeFragment {
     public String getCode() {
         return code;
     }
+
+    public Map<String, String> returnMap() {
+        return Map.of("code", getCode(), "date", getDate().toString());
+    }
+
 
 }
