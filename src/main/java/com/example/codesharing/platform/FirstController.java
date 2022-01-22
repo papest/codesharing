@@ -1,34 +1,45 @@
 package com.example.codesharing.platform;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 
 @RestController
 public class FirstController {
-    static final int LATEST_CONSTANT = 10;
 
-    static CopyOnWriteArrayList<CodeFragment> list = new CopyOnWriteArrayList<>();
+    final CodeFragmentService codeFragmentService;
+
+
+    public FirstController(@Autowired CodeFragmentService codeFragmentService) {
+        this.codeFragmentService = codeFragmentService;
+    }
 
     @GetMapping(value = "/api/code/{id}")
-    public Map<String, String> getApiCode(@PathVariable int id) {
-        if (id >= list.size()) {
+    public Map<String, String> getApiCode(@PathVariable long id) {
+
+        if (codeFragmentService.findCodeFragmentById(id).isEmpty()) {
             return Map.of();
         }
-        return list.get(id).returnMap();
+
+
+        CodeFragment codeFragment = codeFragmentService.findCodeFragmentById(id).get();
+
+        return codeFragment.returnMap();
+
     }
+
 
     @GetMapping(value = "/api/code/latest")
     public List<Map<String, String>> getApiLatest() {
+        List<CodeFragment> list = codeFragmentService.findLatest();
         if (list.isEmpty()) {
             return List.of();
         }
 
-        return list.stream().sorted((a, b) -> (int) (b.getDate().getTime() - a.getDate().getTime()))
-                .limit(LATEST_CONSTANT)
+        return list.stream()
                 .map(CodeFragment::returnMap)
                 .collect(Collectors.toList());
     }
@@ -36,8 +47,9 @@ public class FirstController {
 
     @PostMapping(value = "/api/code/new")
     public Map<String, String> newApiCode(@RequestBody Map<String, String> requestMap) {
-        list.add(new CodeFragment(requestMap.get("code")));
-        return Map.of("id", String.valueOf(list.size() - 1));
+        long nextId = codeFragmentService.lastId() + 1;
+        codeFragmentService.save(new CodeFragment(nextId, requestMap.get("code")));
+        return Map.of("id", Long.toString(nextId));
     }
 
 
