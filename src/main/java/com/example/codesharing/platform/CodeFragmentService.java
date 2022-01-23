@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
@@ -17,7 +18,7 @@ public class CodeFragmentService {
         this.codeFragmentRepository = codeFragmentRepository;
     }
 
-    public Optional<CodeFragment> findCodeFragmentById(Long id) {
+    public Optional<CodeFragment> findCodeFragmentById(UUID id) {
         return codeFragmentRepository.findById(id);
     }
 
@@ -27,15 +28,13 @@ public class CodeFragmentService {
     }
 
     public List<CodeFragment> findLatest() {
-        return codeFragmentRepository.findTop10ByOrderByDateDesc();
+        return codeFragmentRepository.findTop10ByLimitedTimeIsFalseAndLimitedViewsIsFalseOrderByDateDesc();
     }
 
 
-    public long lastId() {
-        CodeFragment codeFragment = codeFragmentRepository.findTopByOrderByIdDesc();
-        if (codeFragment == null) {
-            return -1;
-        }
-        return codeFragmentRepository.findTopByOrderByIdDesc().getId();
+
+    public void delete(UUID id) {
+        codeFragmentRepository.deleteById(id);
     }
 }
+
